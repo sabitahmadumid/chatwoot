@@ -1,5 +1,6 @@
 import types from '../mutation-types';
 import ConversationApi from '../../api/inbox/conversation';
+import throttle from '@jcoreio/async-throttle';
 
 const state = {
   mineCount: 0,
@@ -12,26 +13,24 @@ export const getters = {
   getStats: $state => $state,
 };
 
+const getMeta = async ({ commit }, params) => {
+  try {
+    const response = await ConversationApi.meta(params);
+    const {
+      data: { meta },
+    } = response;
+    commit(types.SET_CONV_TAB_META, meta);
+  } catch (error) {
+    // Ignore error
+  }
+};
+
+const throttledGetMeta = throttle(getMeta, 5000);
+
 export const actions = {
   get: async ({ commit, state: $state }, params) => {
-    const currentTime = new Date();
-    const lastUpdatedTime = new Date($state.updatedOn);
-
-    // Skip large accounts from making too many requests
-    if (currentTime - lastUpdatedTime < 10000 && $state.allCount > 1000) {
-      console.warn('Skipping conversation meta fetch');
-      return;
-    }
-
-    try {
-      const response = await ConversationApi.meta(params);
-      const {
-        data: { meta },
-      } = response;
-      commit(types.SET_CONV_TAB_META, meta);
-    } catch (error) {
-      // Ignore error
-    }
+    const fn = $state.allCount > 1000 ? throttledGetMeta : getMeta;
+    return fn({ commit }, params);
   },
   set({ commit }, meta) {
     commit(types.SET_CONV_TAB_META, meta);
