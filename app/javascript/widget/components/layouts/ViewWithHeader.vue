@@ -20,7 +20,7 @@ export default {
       showPopoutButton: false,
       scrollPosition: 0,
       ticking: true,
-      disableBranding: true,
+      disableBranding: window.chatwootWebChannel.disableBranding || false,
       requestID: null,
     };
   },
