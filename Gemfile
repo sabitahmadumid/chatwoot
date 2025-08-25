@@ -178,6 +178,7 @@ gem 'pgvector'
 gem 'reverse_markdown'
 
 gem 'iso-639'
+gem 'fiddle'
 gem 'ruby-openai'
 gem 'ai-agents', '>= 0.4.3'
 
